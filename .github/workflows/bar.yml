@@ -20,7 +20,7 @@ jobs:
     # If all the jobs pass, this check will pass
     # If one of the jobs is skipped or failed, this check will be skipped *and*
     # counting to have met the criteria for Required jobs
-    needs: [boo, great, what]
+    needs: [boo, great]
     # The name has to match the name from the next job
     name: Approach A
     runs-on: ubuntu-20.04
@@ -29,14 +29,14 @@ jobs:
     steps:
       - name: Check for failures
         # This sadly requires duplication of the list declated in needs
-        if: needs.boo.result == 'failure' || needs.great.result == 'failure' || needs.what.result == 'failure'
+        if: needs.boo.result == 'failure' || needs.great.result == 'failure'
         run: "exit 2"
 
   approach-b:
     # If all the jobs pass, this check will pass
     # If one of the jobs is skipped or failed, this check will be skipped *and*
     # counting to have met the criteria for Required jobs
-    needs: [boo, great, what]
+    needs: [boo, great]
     # The name has to match the name from the next job
     name: Approach B
     runs-on: ubuntu-20.04
