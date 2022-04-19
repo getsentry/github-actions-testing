@@ -16,25 +16,40 @@ jobs:
     steps:
       - run: "exit 0"
 
-  what:
-    runs-on: ubuntu-20.04
-    # This job always skips
-    if: github.head_repository.full_name == 'getsentry/sentry'
-    steps:
-      - run: "exit 0"
-
-  collector:
+  approach-a:
     # If all the jobs pass, this check will pass
     # If one of the jobs is skipped or failed, this check will be skipped *and*
     # counting to have met the criteria for Required jobs
     needs: [boo, great, what]
     # The name has to match the name from the next job
-    name: Required Bar
+    name: Approach A
     runs-on: ubuntu-20.04
     # This is necessary since a failed/skipped job would cause this job to be skipped
     if: always()
     steps:
       - name: Check for failures
         # This sadly requires duplication of the list declated in needs
-        if: needs.boo.result != 'success' || needs.great.result != 'success' || needs.what.result != 'success'
+        if: needs.boo.result == 'failure' || needs.great.result == 'failure' || needs.what.result == 'failure'
         run: "exit 2"
+
+  approach-b:
+    # If all the jobs pass, this check will pass
+    # If one of the jobs is skipped or failed, this check will be skipped *and*
+    # counting to have met the criteria for Required jobs
+    needs: [boo, great, what]
+    # The name has to match the name from the next job
+    name: Approach B
+    runs-on: ubuntu-20.04
+    steps:
+      - run: 'echo "Hooray!"'
+
+  approach-b-again:
+    needs: [boo, great]
+    # It needs to match the name from the previous job
+    name: Approach B
+    runs-on: ubuntu-20.04
+    # This will make sure that the check turns red rather than skipped
+    # Since a Required check being skipped counts as having met the requirement
+    if: failure()
+    steps:
+      - run: "exit 1"

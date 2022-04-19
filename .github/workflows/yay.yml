@@ -16,18 +16,37 @@ jobs:
     steps:
       - run: "exit 0"
 
-  collector:
-    # If all the jobs pass, this check will pass
-    # If one of the jobs is skipped or failed, this check will be skipped *and*
-    # counting to have met the criteria for Required jobs
+  three:
+    if: github.head_repository.full_name == 'getsentry/sentry'
+    runs-on: ubuntu-20.04
+    steps:
+      - run: "exit 0"
+
+  approach-a-success:
+    # We should never skip this job
     needs: [one, two]
     # The name has to match the name from the next job
-    name: Required Yay
+    name: Approach A - all passing
     runs-on: ubuntu-20.04
     # This is necessary since a failed/skipped job would cause this job to be skipped
     if: always()
     steps:
-      - name: Check for failures
+      - name: Check for any failures
         # This sadly requires duplication of the list declated in needs
-        if: needs.one.result != 'success' || needs.two.result != 'success'
+        if: needs.one.result == 'failure' || needs.two.result == 'failure'
+        run: "exit 2"
+
+  # This one includes a job that is skipped
+  approach-a-skip:
+    # We should never skip this job
+    needs: [one, two, three]
+    # The name has to match the name from the next job
+    name: Approach A with one skip
+    runs-on: ubuntu-20.04
+    # This is necessary since a failed/skipped job would cause this job to be skipped
+    if: always()
+    steps:
+      - name: Check for any failures
+        # This sadly requires duplication of the list declated in needs
+        if: needs.one.result == 'failure' || needs.two.result == 'failure' || needs.three.result == 'failure'
         run: "exit 2"
