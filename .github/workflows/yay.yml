@@ -22,7 +22,7 @@ jobs:
     # counting to have met the criteria for Required jobs
     needs: [one, two]
     # The name has to match the name from the next job
-    name: Required Bar
+    name: Required Yay
     runs-on: ubuntu-20.04
     # This is necessary since a failed/skipped job would cause this job to be skipped
     if: always()
