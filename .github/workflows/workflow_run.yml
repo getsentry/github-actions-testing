@@ -19,6 +19,19 @@ jobs:
             ${{ toJSON(github) }}
           EOF
 
+  only-run-on-fork:
+    # Only execute this check when a PR is opened from a fork rather than the upstream repo
+    # head_repository is *only* available when run within workflow_run (use head for PRs)
+    if: github.head_repository.full_name == "getsentry/github-actions-testing"
+    name: Run only on forks
+    runs-on: ubuntu-20.04
+    timeout-minutes: 5
+
+    steps:
+      - name: Hello fork
+        run: |
+          echo "Hello fork!"
+
   run-on-success:
     # https://docs.github.com/en/enterprise-server@3.2/actions/using-workflows/events-that-trigger-workflows#running-a-workflow-based-on-the-conclusion-of-another-workflow
     if: github.event.workflow_run.conclusion == 'success'
