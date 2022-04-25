@@ -19,8 +19,8 @@ jobs:
   two:
     # Push to upstream only!
     # Only execute this check when a PR is opened from the upstream repo rather than a fork
-    # pull_request is *only* available when run within a PR (use head_repository for workflow_run)
-    if: github.pull_request.head.repo.full_name == 'getsentry/github-actions-testing'
+    # event.pull_request is *only* available when run within a PR (use head_repository for workflow_run)
+    if: github.event.pull_request.head.repo.full_name == 'getsentry/github-actions-testing'
     name: Skipped only in forks
     runs-on: ubuntu-20.04
     steps:
@@ -28,8 +28,7 @@ jobs:
 
   three:
     # Opposite condition as above
-    # head is *only* available when run within a PR (use head_repository for workflow_run)
-    if: github.pull_request.head.repo.full_name != 'getsentry/github-actions-testing'
+    if: github.event.pull_request.head.repo.full_name != 'getsentry/github-actions-testing'
     name: Run only in upstream
     runs-on: ubuntu-20.04
     steps:
