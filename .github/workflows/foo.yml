@@ -1,0 +1,77 @@
+name: foo
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+
+jobs:
+  one:
+    runs-on: ubuntu-20.04
+    name: Github context
+    steps:
+      - name: Github context debugging
+        run: |
+          jq . <<EOF
+            ${{ toJSON(github) }}
+          EOF
+
+  two:
+    # head_repository not available in PRs opened from the upstream repo
+    # It will only execute on forks
+    if: github.head_repository.full_name == 'getsentry/github-actions-testing'
+    runs-on: ubuntu-20.04
+    steps:
+      - run: "exit 0"
+
+  three:
+    if: github.repository == 'getsentry/github-actions-testing'
+    runs-on: ubuntu-20.04
+    steps:
+      - run: "exit 0"
+
+  four:
+    runs-on: ubuntu-20.04
+    steps:
+      - run: "exit 1"
+
+  approach-a-success:
+    # We should never skip this job
+    needs: one
+    # The name has to match the name from the next job
+    name: Approach A - all passing
+    runs-on: ubuntu-20.04
+    # This is necessary since a failed/skipped job would cause this job to be skipped
+    if: always()
+    steps:
+      - name: Check for any failures
+        if: contains(needs.*.result, 'failure')
+        run: "exit 2"
+
+  # This one includes a job that is skipped
+  approach-a-skip:
+    # We should never skip this job
+    needs: [one, two, three]
+    # The name has to match the name from the next job
+    name: Approach A - one skipped
+    runs-on: ubuntu-20.04
+    # This is necessary since a failed/skipped job would cause this job to be skipped
+    if: always()
+    steps:
+      - name: Check for any failures
+        if: contains(needs.*.result, 'failure')
+        run: "exit 2"
+
+  # This one includes a job that is skipped
+  approach-a-failure:
+    # We should never skip this job
+    needs: [one, two, three, four]
+    # The name has to match the name from the next job
+    name: Approach A - one failing
+    runs-on: ubuntu-20.04
+    # This is necessary since a failed/skipped job would cause this job to be skipped
+    if: always()
+    steps:
+      - name: Check for any failures
+        if: contains(needs.*.result, 'failure')
+        run: "exit 2"
