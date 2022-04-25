@@ -17,7 +17,7 @@ jobs:
           EOF
 
   two:
-    # Push to fork plz!
+    # Push to upstream plz!
     # Only execute this check when a PR is opened from the upstream repo rather than a fork
     # event.pull_request is *only* available when run within a PR (use head_repository for workflow_run)
     if: github.event.pull_request.head.repo.full_name != 'getsentry/github-actions-testing'
