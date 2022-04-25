@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-20.04
     name: Github context
     steps:
-      - name: Github context debugging
+      - name: Github context
         run: |
           jq . <<EOF
             ${{ toJSON(github) }}
