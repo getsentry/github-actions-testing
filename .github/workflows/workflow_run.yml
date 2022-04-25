@@ -8,8 +8,6 @@ on:
 
 jobs:
   workflow-run:
-    # https://docs.github.com/en/enterprise-server@3.2/actions/using-workflows/events-that-trigger-workflows#running-a-workflow-based-on-the-conclusion-of-another-workflow
-    if: github.event.workflow_run.conclusion == 'success'
     name: workflow run
     runs-on: ubuntu-20.04
     timeout-minutes: 5
@@ -20,3 +18,27 @@ jobs:
           jq . <<EOF
             ${{ toJSON(github) }}
           EOF
+
+  run-on-success:
+    # https://docs.github.com/en/enterprise-server@3.2/actions/using-workflows/events-that-trigger-workflows#running-a-workflow-based-on-the-conclusion-of-another-workflow
+    if: github.event.workflow_run.conclusion == 'success'
+    name: workflow run
+    runs-on: ubuntu-20.04
+    timeout-minutes: 5
+
+    steps:
+      - name: Hello world
+        run: |
+          echo "Hello world!"
+
+  run-on-failure:
+    # https://docs.github.com/en/enterprise-server@3.2/actions/using-workflows/events-that-trigger-workflows#running-a-workflow-based-on-the-conclusion-of-another-workflow
+    if: github.event.workflow_run.conclusion == 'failure'
+    name: workflow run
+    runs-on: ubuntu-20.04
+    timeout-minutes: 5
+
+    steps:
+      - name: Hello world
+        run: |
+          echo "Hello world!"
