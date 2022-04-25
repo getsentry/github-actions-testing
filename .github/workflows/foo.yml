@@ -17,15 +17,16 @@ jobs:
           EOF
 
   two:
-    # head_repository not available in PRs opened from the upstream repo
-    # It will only execute on forks
-    if: github.head_repository.full_name == 'getsentry/github-actions-testing'
+    # Only execute this check when a PR is opened from the upstream repo rather than a fork
+    # head_repository is *only* available when run within workflow_run (use head for PRs)
+    if: github.head.full_name == "getsentry/github-actions-testing"
     runs-on: ubuntu-20.04
     steps:
       - run: "exit 0"
 
   three:
-    if: github.repository == 'getsentry/github-actions-testing'
+    # We always skip
+    if: github.not_existant_key == 'always-skipped'
     runs-on: ubuntu-20.04
     steps:
       - run: "exit 0"
