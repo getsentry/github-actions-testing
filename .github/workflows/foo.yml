@@ -17,12 +17,15 @@ jobs:
           EOF
 
   two:
+    # head_repository not available in PRs opened from the upstream repo
+    # It will only execute on forks
+    if: github.head_repository.full_name == 'getsentry/github-actions-testing'
     runs-on: ubuntu-20.04
     steps:
       - run: "exit 0"
 
   three:
-    if: github.head_repository.full_name == 'getsentry/github-actions-testing'
+    if: github.repository == 'getsentry/github-actions-testing'
     runs-on: ubuntu-20.04
     steps:
       - run: "exit 0"
@@ -34,7 +37,7 @@ jobs:
 
   approach-a-success:
     # We should never skip this job
-    needs: [one, two]
+    needs: one
     # The name has to match the name from the next job
     name: Approach A - all passing
     runs-on: ubuntu-20.04
@@ -42,8 +45,7 @@ jobs:
     if: always()
     steps:
       - name: Check for any failures
-        # This sadly requires duplication of the list declated in needs
-        if: needs.one.result == 'failure' || needs.two.result == 'failure'
+        if: contains(needs.*.result, 'failure')
         run: "exit 2"
 
   # This one includes a job that is skipped
@@ -57,8 +59,7 @@ jobs:
     if: always()
     steps:
       - name: Check for any failures
-        # This sadly requires duplication of the list declated in needs
-        if: needs.one.result == 'failure' || needs.two.result == 'failure' || needs.three.result == 'failure'
+        if: contains(needs.*.result, 'failure')
         run: "exit 2"
 
   # This one includes a job that is skipped
@@ -72,6 +73,5 @@ jobs:
     if: always()
     steps:
       - name: Check for any failures
-        # This sadly requires duplication of the list declated in needs
-        if: needs.one.result == 'failure' || needs.two.result == 'failure' || needs.three.result == 'failure' || needs.four.result == 'failure'
+        if: contains(needs.*.result, 'failure')
         run: "exit 2"
