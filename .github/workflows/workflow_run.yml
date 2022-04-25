@@ -8,7 +8,7 @@ on:
 
 jobs:
   workflow-run:
-    name: workflow run
+    name: GH context
     runs-on: ubuntu-20.04
     timeout-minutes: 5
 
