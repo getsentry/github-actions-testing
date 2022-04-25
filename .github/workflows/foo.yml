@@ -19,7 +19,7 @@ jobs:
   two:
     # Only execute this check when a PR is opened from the upstream repo rather than a fork
     # head_repository is *only* available when run within workflow_run (use head for PRs)
-    if: github.head.full_name == "getsentry/github-actions-testing"
+    if: github.head.full_name == 'getsentry/github-actions-testing'
     runs-on: ubuntu-20.04
     steps:
       - run: "exit 0"
