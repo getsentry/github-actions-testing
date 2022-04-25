@@ -26,19 +26,17 @@ jobs:
     name: Run only on forks
     runs-on: ubuntu-20.04
     timeout-minutes: 5
-
     steps:
       - name: Hello fork
         run: |
           echo "Hello fork!"
-  
-  only-run-on-fork:
+
+  only-run-on-upstream:
     # Opposite of above
     if: github.head_repository.full_name != 'getsentry/github-actions-testing'
     name: Run only on forks
     runs-on: ubuntu-20.04
     timeout-minutes: 5
-
     steps:
       - name: Hello upstream
         run: |
