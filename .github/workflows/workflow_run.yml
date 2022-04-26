@@ -13,7 +13,7 @@ jobs:
     timeout-minutes: 5
 
     steps:
-      - name: Github context debugging
+      - name: Github context
         run: |
           jq . <<EOF
             ${{ toJSON(github) }}
