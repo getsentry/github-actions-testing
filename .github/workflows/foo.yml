@@ -26,9 +26,9 @@ jobs:
   #     - run: "exit 0"
 
   three:
-    # Opposite condition as above
+    # Only on upstream PRs
     if: github.event.pull_request.head.repo.full_name == 'getsentry/github-actions-testing'
-    name: Run only in upstream
+    name: Only run in upstream PR
     runs-on: ubuntu-20.04
     steps:
       - run: "exit 0"
@@ -51,19 +51,19 @@ jobs:
         if: contains(needs.*.result, 'failure')
         run: "exit 2"
 
-  # This one includes a job that is skipped
-  approach-a-skip:
-    # We should never skip this job
-    needs: [one, two, three]
-    # The name has to match the name from the next job
-    name: Approach A - one skipped
-    runs-on: ubuntu-20.04
-    # This is necessary since a failed/skipped job would cause this job to be skipped
-    if: always()
-    steps:
-      - name: Check for any failures
-        if: contains(needs.*.result, 'failure')
-        run: "exit 2"
+  # # This one includes a job that is skipped
+  # approach-a-skip:
+  #   # We should never skip this job
+  #   needs: [one, three]
+  #   # The name has to match the name from the next job
+  #   name: Approach A - one skipped
+  #   runs-on: ubuntu-20.04
+  #   # This is necessary since a failed/skipped job would cause this job to be skipped
+  #   if: always()
+  #   steps:
+  #     - name: Check for any failures
+  #       if: contains(needs.*.result, 'failure')
+  #       run: "exit 2"
 
   # # This one includes a job that is skipped
   # approach-a-failure:
