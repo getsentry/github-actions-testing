@@ -10,7 +10,7 @@ jobs:
   only-run-on-fork-or-master:
     # Only execute on master OR when a PR is opened from a fork
     if: github.event.workflow_run.head_repository.full_name != 'getsentry/github-actions-testing' || github.ref == 'refs/heads/master'
-    name: Run only on forks
+    name: Run only on forks or master
     runs-on: ubuntu-20.04
     timeout-minutes: 5
     steps:
