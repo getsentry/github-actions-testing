@@ -19,7 +19,7 @@ jobs:
   two:
     # Only execute this check when a PR is opened from the upstream repo rather than a fork
     # event.pull_request is *only* available when run within a PR (use head_repository for workflow_run)
-    if: github.event.pull_request.head.repo.full_name != 'getsentry/github-actions-testing'
+    if: github.ref != 'refs/heads/master' && github.event.pull_request.head.repo.full_name != 'getsentry/github-actions-testing'
     name: Run only in forks
     runs-on: ubuntu-20.04
     steps:
@@ -27,16 +27,16 @@ jobs:
 
   three:
     # Opposite condition as above
-    if: github.event.pull_request.head.repo.full_name == 'getsentry/github-actions-testing'
+    if: github.ref == 'refs/heads/master' || github.event.pull_request.head.repo.full_name == 'getsentry/github-actions-testing'
     name: Run only in upstream
     runs-on: ubuntu-20.04
     steps:
       - run: "exit 0"
 
-  four:
-    runs-on: ubuntu-20.04
-    steps:
-      - run: "exit 1"
+  # four:
+  #   runs-on: ubuntu-20.04
+  #   steps:
+  #     - run: "exit 1"
 
   approach-a-success:
     # We should never skip this job
@@ -65,16 +65,16 @@ jobs:
         if: contains(needs.*.result, 'failure')
         run: "exit 2"
 
-  # This one includes a job that is skipped
-  approach-a-failure:
-    # We should never skip this job
-    needs: [one, two, three, four]
-    # The name has to match the name from the next job
-    name: Approach A - one failing
-    runs-on: ubuntu-20.04
-    # This is necessary since a failed/skipped job would cause this job to be skipped
-    if: always()
-    steps:
-      - name: Check for any failures
-        if: contains(needs.*.result, 'failure')
-        run: "exit 2"
+  # # This one includes a job that is skipped
+  # approach-a-failure:
+  #   # We should never skip this job
+  #   needs: [one, two, three, four]
+  #   # The name has to match the name from the next job
+  #   name: Approach A - one failing
+  #   runs-on: ubuntu-20.04
+  #   # This is necessary since a failed/skipped job would cause this job to be skipped
+  #   if: always()
+  #   steps:
+  #     - name: Check for any failures
+  #       if: contains(needs.*.result, 'failure')
+  #       run: "exit 2"
