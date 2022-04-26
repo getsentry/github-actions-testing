@@ -8,9 +8,8 @@ on:
 
 jobs:
   only-run-on-fork-or-master:
-    # Only execute this check when a PR is opened from a fork rather than the upstream repo OR master
-    # head_repository is *only* available when run within workflow_run (use github.event.pull_request for PRs)
-    if: github.event.workflow_run.head_repository.full_name != 'getsentry/github-actions-testing'
+    # Only execute on master OR when a PR is opened from a fork
+    if: github.event.workflow_run.head_repository.full_name != 'getsentry/github-actions-testing' || github.ref == 'refs/heads/master'
     name: Run only on forks
     runs-on: ubuntu-20.04
     timeout-minutes: 5
