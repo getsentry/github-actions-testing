@@ -1,0 +1,93 @@
+name: files-changed
+on:
+  workflow_dispatch:
+    inputs:
+      pull_request_number:
+        description: 'The "sentry" Pull Request number'
+        required: false
+      sentry-sha:
+        description: 'The "sentry" SHA to run against'
+        required: false
+      skip:
+        description: "Should tests be skipped? (i.e. if no frontend file changed)"
+        required: false
+  pull_request:
+
+jobs:
+  files-changed:
+    name: detect what files changed
+    runs-on: ubuntu-20.04
+    timeout-minutes: 3
+    # Map a step output to a job output
+    outputs:
+      # XXX: This is one of the fixes
+      frontend: ${{ steps.changes.outputs.frontend }}
+      master-or-dispatch-or-frontend-changes: ${{ steps.should-run.outputs.master-or-dispatch-or-frontend-changes }}
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Check for frontend file changes
+        uses: getsentry/paths-filter@v2
+        id: changes
+        with:
+          token: ${{ github.token }}
+          filters: .github/file-filters.yml
+          list-files: shell
+
+      - name: Is this on master, from workflow dispatch, or are there frontend files changed?
+        id: should-run
+        run: |
+          if [ '${{ github.ref }}' == 'refs/heads/master' ] || [ '${{ github.event.inputs.sentry-sha }}' != '' ] || [ '${{ needs.files-changed.outputs.frontend }}' == 'true' ]; then
+            echo "::set-output name=master-or-dispatch-or-frontend-changes::true"
+          else
+            echo "::set-output name=master-or-dispatch-or-frontend-changes::false"
+          fi
+
+  jobA:
+    name: dependant A
+    if: github.event.inputs.skip != 'true'
+    needs: files-changed
+    runs-on: ubuntu-20.04
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Is this on master, from workflow dispatch, or are there frontend files changed?
+        id: should-run
+        run: |
+          if [ '${{ github.ref }}' == 'refs/heads/master' ] || [ '${{ github.event.inputs.sentry-sha }}' != '' ] || [ '${{ needs.files-changed.outputs.frontend }}' == 'true' ]; then
+            echo "::set-output name=master-or-dispatch-or-frontend-changes::true"
+          else
+            echo "::set-output name=master-or-dispatch-or-frontend-changes::false"
+          fi
+
+      - name: foo
+        if: steps.should-run.outputs.master-or-dispatch-or-frontend-changes == 'true'
+        run: |
+          echo "Welcome!"
+
+      - name: not foo
+        if: steps.should-run.outputs.master-or-dispatch-or-frontend-changes != 'true'
+        run: |
+          echo "Not Welcome!"
+
+  jobB:
+    name: dependant B
+    if: github.event.inputs.skip != 'true'
+    needs: files-changed
+    runs-on: ubuntu-20.04
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: foo
+        if: needs.files-changed.outputs.master-or-dispatch-or-frontend-changes == 'true'
+        run: |
+          echo "Welcome!"
+
+      - name: not foo
+        if: needs.files-changed.outputs.master-or-dispatch-or-frontend-changes != 'true'
+        run: |
+          echo "Not welcome!"
