@@ -35,7 +35,7 @@ jobs:
     # This is necessary since a failed/skipped job would cause this job to be skipped
     if: always()
     needs: [always-succeeds, always-fails, always-timesout]
-    name: Collector job
+    name: Action --> failure && timeout
     runs-on: ubuntu-20.04
     steps:
       # run this action to get the workflow conclusion
@@ -95,8 +95,10 @@ jobs:
         if: contains(needs.*.result, 'failure')
         run: "exit 2"
 
+      # This can catch failure, timed_out and cancelled
+      # timeouts are considered a failure
       - name: Check for failures or timeouts
-        if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'skipped')
+        if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
         run: "exit 2"
 
   # collector-job-with-failure:
