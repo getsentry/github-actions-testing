@@ -31,20 +31,59 @@ jobs:
     steps:
       - run: "sleep 65"
 
-  collector-job:
+  collector-job-with-both:
     # This is necessary since a failed/skipped job would cause this job to be skipped
     if: always()
-    needs: [always-success, always-timeout]
+    needs: [always-success, always-failure, always-timeout]
     name: Collector job
     runs-on: ubuntu-20.04
     steps:
-      - name: Check for any failures
-        if: contains(needs.*.result, 'failure')
-        run: "exit 2"
+      # run this action to get the workflow conclusion
+      # You can get the conclusion via env (env.WORKFLOW_CONCLUSION)
+      - uses: technote-space/workflow-conclusion-action@3ac32f35e946d5298758591b6a14abc8b9563ec0
+
+      - name: Output
+        run: env | sort
 
       - name: Check for any failures
-        if: contains(needs.*.result, 'failure')
+        if: env.WORKFLOW_CONCLUSION == 'failure'
         run: "exit 2"
+
+  # collector-job-with-timeout:
+  #   # This is necessary since a failed/skipped job would cause this job to be skipped
+  #   if: always()
+  #   needs: [always-success, always-timeout]
+  #   name: Collector job
+  #   runs-on: ubuntu-20.04
+  #   steps:
+  #     # run this action to get the workflow conclusion
+  #     # You can get the conclusion via env (env.WORKFLOW_CONCLUSION)
+  #     - uses: technote-space/workflow-conclusion-action@3ac32f35e946d5298758591b6a14abc8b9563ec0
+
+  #     - name: Output
+  #       run: env | sort
+
+  #     - name: Check for any failures
+  #       if: env.WORKFLOW_CONCLUSION == 'failure'
+  #       run: "exit 2"
+
+  # collector-job-with-failure:
+  #   # This is necessary since a failed/skipped job would cause this job to be skipped
+  #   if: always()
+  #   needs: [always-success, always-failure]
+  #   name: Collector job
+  #   runs-on: ubuntu-20.04
+  #   steps:
+  #     # run this action to get the workflow conclusion
+  #     # You can get the conclusion via env (env.WORKFLOW_CONCLUSION)
+  #     - uses: technote-space/workflow-conclusion-action@3ac32f35e946d5298758591b6a14abc8b9563ec0
+
+  #     - name: Output
+  #       run: env | sort
+
+  #     - name: Check for any failures
+  #       if: env.WORKFLOW_CONCLUSION == 'failure'
+  #       run: "exit 2"
 
   # # This one includes a job that is skipped
   # approach-a-skip:
