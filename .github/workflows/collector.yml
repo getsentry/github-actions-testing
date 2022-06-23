@@ -27,7 +27,7 @@ jobs:
 
   always-timeout:
     runs-on: ubuntu-20.04
-    timeout: 1
+    timeout-minutes: 1
     steps:
       - run: "sleep 5"
 
