@@ -29,7 +29,7 @@ jobs:
     runs-on: ubuntu-20.04
     timeout-minutes: 1
     steps:
-      - run: "sleep 65"
+      - run: "sleep 130"
 
   collector-job-with-both:
     # This is necessary since a failed/skipped job would cause this job to be skipped
