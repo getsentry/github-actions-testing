@@ -15,7 +15,7 @@ jobs:
             ${{ toJSON(github) }}
           EOF
 
-  awlays-succeeds:
+  always-succeeds:
     runs-on: ubuntu-20.04
     steps:
       - run: "exit 0"
@@ -34,7 +34,7 @@ jobs:
   collector-job-with-both:
     # This is necessary since a failed/skipped job would cause this job to be skipped
     if: always()
-    needs: [awlays-succeeds, awlays-fails, always-timesout]
+    needs: [always-succeeds, always-fails, always-timesout]
     name: Collector job
     runs-on: ubuntu-20.04
     steps:
@@ -52,7 +52,7 @@ jobs:
   # collector-job-with-timeout:
   #   # This is necessary since a failed/skipped job would cause this job to be skipped
   #   if: always()
-  #   needs: [awlays-succeeds, always-timesout]
+  #   needs: [always-succeeds, always-timesout]
   #   name: Collector job
   #   runs-on: ubuntu-20.04
   #   steps:
@@ -70,7 +70,7 @@ jobs:
   # collector-job-with-failure:
   #   # This is necessary since a failed/skipped job would cause this job to be skipped
   #   if: always()
-  #   needs: [awlays-succeeds, awlays-fails]
+  #   needs: [always-succeeds, always-fails]
   #   name: Collector job
   #   runs-on: ubuntu-20.04
   #   steps:
