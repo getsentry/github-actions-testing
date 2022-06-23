@@ -1,12 +1,11 @@
-name: foo
+name: ci
 on:
-  push:
-    branches:
-      - master
   pull_request:
+    paths:
+      - ".github/workflows/collector.yml"
 
 jobs:
-  one:
+  context:
     runs-on: ubuntu-20.04
     name: Github context
     steps:
@@ -16,37 +15,33 @@ jobs:
             ${{ toJSON(github) }}
           EOF
 
-  # two:
-  #   # Only execute this check when a PR is opened from the upstream repo rather than a fork
-  #   # event.pull_request is *only* available when run within a PR (use head_repository for workflow_run)
-  #   if: github.event.pull_request.head.repo.full_name != 'getsentry/github-actions-testing'
-  #   name: Run only in forks
-  #   runs-on: ubuntu-20.04
-  #   steps:
-  #     - run: "exit 0"
-
-  three:
-    # Only on upstream PRs
-    if: github.event.pull_request.head.repo.full_name == 'getsentry/github-actions-testing'
-    name: Only run in upstream PR
+  always-success:
     runs-on: ubuntu-20.04
     steps:
       - run: "exit 0"
 
-  # four:
-  #   runs-on: ubuntu-20.04
-  #   steps:
-  #     - run: "exit 1"
-
-  approach-a-success:
-    # We should never skip this job
-    needs: one
-    # The name has to match the name from the next job
-    name: Approach A - all passing
+  always-fails:
     runs-on: ubuntu-20.04
+    steps:
+      - run: "exit 1"
+
+  always-timeout:
+    runs-on: ubuntu-20.04
+    timeout: 1
+    steps:
+      - run: "sleep 5"
+
+  collector-job:
     # This is necessary since a failed/skipped job would cause this job to be skipped
     if: always()
+    needs: [always-success, always-timeout]
+    name: Approach A - all passing
+    runs-on: ubuntu-20.04
     steps:
+      - name: Check for any failures
+        if: contains(needs.*.result, 'failure')
+        run: "exit 2"
+
       - name: Check for any failures
         if: contains(needs.*.result, 'failure')
         run: "exit 2"

@@ -1,0 +1,23 @@
+name: origin
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/upstream_fork.yml"
+
+jobs:
+  fork-pr:
+    # Only execute this check when a PR is opened from the upstream repo rather than a fork
+    # event.pull_request is *only* available when run within a PR (use head_repository for workflow_run)
+    if: github.event.pull_request.head.repo.full_name != 'getsentry/github-actions-testing'
+    name: Run only in forks
+    runs-on: ubuntu-20.04
+    steps:
+      - run: "exit 0"
+
+  upstream-pr:
+    # Only on upstream PRs
+    if: github.event.pull_request.head.repo.full_name == 'getsentry/github-actions-testing'
+    name: Only run in upstream PR
+    runs-on: ubuntu-20.04
+    steps:
+      - run: "exit 0"
