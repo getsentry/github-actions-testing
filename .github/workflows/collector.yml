@@ -29,45 +29,9 @@ jobs:
     runs-on: ubuntu-20.04
     timeout-minutes: 1
     steps:
-      - run: "sleep 130"
+      - run: "sleep 65"
 
-  collector-job-with-both:
-    # This is necessary since a failed/skipped job would cause this job to be skipped
-    if: always()
-    needs: [always-succeeds, always-fails, always-timesout]
-    name: Action --> failure && timeout
-    runs-on: ubuntu-20.04
-    steps:
-      # run this action to get the workflow conclusion
-      # You can get the conclusion via env (env.WORKFLOW_CONCLUSION)
-      - uses: technote-space/workflow-conclusion-action@v3
-
-      - name: Output
-        run: env | sort
-
-      - name: Check for any failures
-        if: env.WORKFLOW_CONCLUSION == 'failure'
-        run: "exit 2"
-
-  collector-job-with-timeout:
-    # This is necessary since a failed/skipped job would cause this job to be skipped
-    if: always()
-    needs: [always-succeeds, always-timesout]
-    name: Action --> with timeout
-    runs-on: ubuntu-20.04
-    steps:
-      # run this action to get the workflow conclusion
-      # You can get the conclusion via env (env.WORKFLOW_CONCLUSION)
-      - uses: technote-space/workflow-conclusion-action@v3
-
-      - name: Output
-        run: env | sort
-
-      - name: Check for any failures
-        if: env.WORKFLOW_CONCLUSION == 'failure'
-        run: "exit 2"
-
-  use-contains:
+  collector-job:
     # We should never skip this job
     needs: [always-succeeds, always-timesout]
     # The name has to match the name from the next job
@@ -76,73 +40,19 @@ jobs:
     # This is necessary since a failed/skipped job would cause this job to be skipped
     if: always()
     steps:
+      # cancelled, failure, neutral, success, skipped, stale, timed_out
       - name: needs context
         run: |
           jq . <<EOF
             ${{ toJSON(needs) }}
           EOF
-      # cancelled, failure, neutral, success, skipped, stale, timed_out
-      - name: Output results
-        env:
-          contains_cancelled: contains(needs.*.result, 'cancelled')
-          contains_failure: contains(needs.*.result, 'failure')
-          contains_skipped: contains(needs.*.result, 'skipped')
-          contains_timed_out: contains(needs.*.result, 'timed_out')
-        run: |
-          env | grep "contains" | sort
 
+      # timeouts are considered a failure, thus, it will be caught here
       - name: Check for any failures
         if: contains(needs.*.result, 'failure')
         run: "exit 2"
 
       # This can catch failure, timed_out and cancelled
-      # timeouts are considered a failure
       - name: Check for failures or timeouts
         if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
         run: "exit 2"
-
-  # collector-job-with-failure:
-  #   # This is necessary since a failed/skipped job would cause this job to be skipped
-  #   if: always()
-  #   needs: [always-succeeds, always-fails]
-  #   name: Collector job
-  #   runs-on: ubuntu-20.04
-  #   steps:
-  #     # run this action to get the workflow conclusion
-  #     # You can get the conclusion via env (env.WORKFLOW_CONCLUSION)
-  #     - uses: technote-space/workflow-conclusion-action@v3
-
-  #     - name: Output
-  #       run: env | sort
-
-  #     - name: Check for any failures
-  #       if: env.WORKFLOW_CONCLUSION == 'failure'
-  #       run: "exit 2"
-
-  # # This one includes a job that is skipped
-  # approach-a-skip:
-  #   # We should never skip this job
-  #   needs: [one, three]
-  #   # The name has to match the name from the next job
-  #   name: Approach A - one skipped
-  #   runs-on: ubuntu-20.04
-  #   # This is necessary since a failed/skipped job would cause this job to be skipped
-  #   if: always()
-  #   steps:
-  #     - name: Check for any failures
-  #       if: contains(needs.*.result, 'failure')
-  #       run: "exit 2"
-
-  # # This one includes a job that is skipped
-  # approach-a-failure:
-  #   # We should never skip this job
-  #   needs: [one, two, three, four]
-  #   # The name has to match the name from the next job
-  #   name: Approach A - one failing
-  #   runs-on: ubuntu-20.04
-  #   # This is necessary since a failed/skipped job would cause this job to be skipped
-  #   if: always()
-  #   steps:
-  #     - name: Check for any failures
-  #       if: contains(needs.*.result, 'failure')
-  #       run: "exit 2"
