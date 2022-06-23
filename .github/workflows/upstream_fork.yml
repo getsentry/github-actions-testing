@@ -1,4 +1,4 @@
-name: origin
+name: fork or upstream
 on:
   pull_request:
     paths:

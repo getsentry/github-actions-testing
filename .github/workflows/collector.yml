@@ -1,4 +1,4 @@
-name: ci
+name: collector
 on:
   pull_request:
     paths:
@@ -27,9 +27,9 @@ jobs:
 
   always-timeout:
     runs-on: ubuntu-20.04
-    timeout-minutes: 0
+    timeout-minutes: 1
     steps:
-      - run: "sleep 5"
+      - run: "sleep 65"
 
   collector-job:
     # This is necessary since a failed/skipped job would cause this job to be skipped
