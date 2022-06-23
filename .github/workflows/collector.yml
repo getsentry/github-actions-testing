@@ -27,7 +27,7 @@ jobs:
 
   always-timeout:
     runs-on: ubuntu-20.04
-    timeout-minutes: 1
+    timeout-minutes: 0
     steps:
       - run: "sleep 5"
 
@@ -35,7 +35,7 @@ jobs:
     # This is necessary since a failed/skipped job would cause this job to be skipped
     if: always()
     needs: [always-success, always-timeout]
-    name: Approach A - all passing
+    name: Collector job
     runs-on: ubuntu-20.04
     steps:
       - name: Check for any failures
