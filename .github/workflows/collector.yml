@@ -40,7 +40,7 @@ jobs:
     steps:
       # run this action to get the workflow conclusion
       # You can get the conclusion via env (env.WORKFLOW_CONCLUSION)
-      - uses: technote-space/workflow-conclusion-action@3ac32f35e946d5298758591b6a14abc8b9563ec0
+      - uses: technote-space/workflow-conclusion-action@v3
 
       - name: Output
         run: env | sort
@@ -49,23 +49,55 @@ jobs:
         if: env.WORKFLOW_CONCLUSION == 'failure'
         run: "exit 2"
 
-  # collector-job-with-timeout:
-  #   # This is necessary since a failed/skipped job would cause this job to be skipped
-  #   if: always()
-  #   needs: [always-succeeds, always-timesout]
-  #   name: Collector job
-  #   runs-on: ubuntu-20.04
-  #   steps:
-  #     # run this action to get the workflow conclusion
-  #     # You can get the conclusion via env (env.WORKFLOW_CONCLUSION)
-  #     - uses: technote-space/workflow-conclusion-action@3ac32f35e946d5298758591b6a14abc8b9563ec0
+  collector-job-with-timeout:
+    # This is necessary since a failed/skipped job would cause this job to be skipped
+    if: always()
+    needs: [always-succeeds, always-timesout]
+    name: Action --> with timeout
+    runs-on: ubuntu-20.04
+    steps:
+      # run this action to get the workflow conclusion
+      # You can get the conclusion via env (env.WORKFLOW_CONCLUSION)
+      - uses: technote-space/workflow-conclusion-action@v3
 
-  #     - name: Output
-  #       run: env | sort
+      - name: Output
+        run: env | sort
 
-  #     - name: Check for any failures
-  #       if: env.WORKFLOW_CONCLUSION == 'failure'
-  #       run: "exit 2"
+      - name: Check for any failures
+        if: env.WORKFLOW_CONCLUSION == 'failure'
+        run: "exit 2"
+
+  use-contains:
+    # We should never skip this job
+    needs: [always-succeeds, always-timesout]
+    # The name has to match the name from the next job
+    name: Regular
+    runs-on: ubuntu-20.04
+    # This is necessary since a failed/skipped job would cause this job to be skipped
+    if: always()
+    steps:
+      - name: needs context
+        run: |
+          jq . <<EOF
+            ${{ toJSON(needs) }}
+          EOF
+      # cancelled, failure, neutral, success, skipped, stale, timed_out
+      - name: Output results
+        env:
+          contains_cancelled: contains(needs.*.result, 'cancelled')
+          contains_failure: contains(needs.*.result, 'failure')
+          contains_skipped: contains(needs.*.result, 'skipped')
+          contains_timed_out: contains(needs.*.result, 'timed_out')
+        run: |
+          env | grep "contains" | sort
+
+      - name: Check for any failures
+        if: contains(needs.*.result, 'failure')
+        run: "exit 2"
+
+      - name: Check for failures or timeouts
+        if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'skipped')
+        run: "exit 2"
 
   # collector-job-with-failure:
   #   # This is necessary since a failed/skipped job would cause this job to be skipped
@@ -76,7 +108,7 @@ jobs:
   #   steps:
   #     # run this action to get the workflow conclusion
   #     # You can get the conclusion via env (env.WORKFLOW_CONCLUSION)
-  #     - uses: technote-space/workflow-conclusion-action@3ac32f35e946d5298758591b6a14abc8b9563ec0
+  #     - uses: technote-space/workflow-conclusion-action@v3
 
   #     - name: Output
   #       run: env | sort
