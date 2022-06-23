@@ -1,0 +1,58 @@
+name: collector
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/collector.yml"
+
+jobs:
+  context:
+    runs-on: ubuntu-20.04
+    name: Github context
+    steps:
+      - name: Github context
+        run: |
+          jq . <<EOF
+            ${{ toJSON(github) }}
+          EOF
+
+  always-succeeds:
+    runs-on: ubuntu-20.04
+    steps:
+      - run: "exit 0"
+
+  always-fails:
+    runs-on: ubuntu-20.04
+    steps:
+      - run: "exit 1"
+
+  always-timesout:
+    runs-on: ubuntu-20.04
+    timeout-minutes: 1
+    steps:
+      - run: "sleep 65"
+
+  collector-job:
+    # We should never skip this job
+    needs: [always-succeeds, always-timesout]
+    # The name has to match the name from the next job
+    name: Regular
+    runs-on: ubuntu-20.04
+    # This is necessary since a failed/skipped job would cause this job to be skipped
+    if: always()
+    steps:
+      # cancelled, failure, neutral, success, skipped, stale, timed_out
+      - name: needs context
+        run: |
+          jq . <<EOF
+            ${{ toJSON(needs) }}
+          EOF
+
+      # timeouts are considered a failure, thus, it will be caught here
+      - name: Check for any failures
+        if: contains(needs.*.result, 'failure')
+        run: "exit 2"
+
+      # This can catch failure, timed_out and cancelled
+      - name: Check for failures or timeouts
+        if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
+        run: "exit 2"
